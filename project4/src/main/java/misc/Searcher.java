@@ -1,7 +1,11 @@
 package misc;
 
+import java.util.Iterator;
+
+import datastructures.concrete.ArrayHeap;
+import datastructures.concrete.DoubleLinkedList;
 import datastructures.interfaces.IList;
-import misc.exceptions.NotYetImplementedException;
+import datastructures.interfaces.IPriorityQueue;
 
 public class Searcher {
     /**
@@ -30,7 +34,60 @@ public class Searcher {
         //
         // - You should implement this method by using your ArrayHeap for the sake of
         //   efficiency.
-
-        throw new NotYetImplementedException();
+        IList<T> sortedList = new DoubleLinkedList<>();
+        IPriorityQueue<T> heap = new ArrayHeap<>();
+        Iterator<T> iterator = input.iterator();
+        
+        if (k < 0) {
+            throw new IllegalArgumentException();
+        }
+        
+        else if (k == 0) {
+            return sortedList;
+        }
+        
+        else if (k >= input.size()) {
+            for (int i = 0; i < input.size(); i++) {
+                T temp = iterator.next();
+                if (temp == null) {
+                throw new IllegalArgumentException();    
+                }else {
+                heap.insert(temp);
+                }
+            }
+            for (int i = 0; i < input.size(); i++) {
+                sortedList.add(heap.removeMin());
+            }
+            return sortedList;
+        }
+        else {
+            for (int i = 0; i < input.size(); i++) {
+                if (i < k) {
+                    T temp = iterator.next();
+                    if (temp == null) {
+                    throw new IllegalArgumentException();    
+                    }else {
+                    heap.insert(temp);
+                    }
+                } else {
+                    T temp = iterator.next();
+                    if (temp == null) {
+                        throw new IllegalArgumentException();    
+                        }else {
+                    if (heap.peekMin().compareTo(temp) < 0) {
+                        heap.removeMin();
+                        heap.insert(temp);
+                    }
+                    }
+                }
+            }
+        
+            for (int i = 0; i < k; i++) {
+                sortedList.add(heap.removeMin());
+            }
+        
+            return sortedList;
+        }
+        
     }
 }
