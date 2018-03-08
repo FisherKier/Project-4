@@ -22,15 +22,33 @@ public class TestArrayDisjointSet extends BaseTest {
         }
     }
 
+    
+    
+    @Test
+    public void testSimpleFunctions() {
+        Integer[] items = {7,3,4,8,5,2,1,9,10,6};
+        IDisjointSet<Integer> forest = createForest(items);
+        
+        //for (int i = 0; i < 4; i++) {
+            check(forest, items, new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+        //}
+            
+        
+    }
+    
+    
+    
     @Test(timeout=SECOND)
     public void testMakeSetAndFindSetSimple() {
         String[] items = new String[] {"a", "b", "c", "d", "e"};
         IDisjointSet<String> forest = this.createForest(items);
-
+        
         for (int i = 0; i < 5; i++) {
             check(forest, items, new int[] {0, 1, 2, 3, 4});
         }
     }
+
+    
 
     @Test(timeout=SECOND)
     public void testUnionSimple() {
@@ -49,6 +67,8 @@ public class TestArrayDisjointSet extends BaseTest {
 
         assertEquals(4, forest.findSet("e"));
     }
+    
+    
 
     @Test(timeout=SECOND)
     public void testUnionUnequalTrees() {
@@ -119,4 +139,5 @@ public class TestArrayDisjointSet extends BaseTest {
             }
         }
     }
+    
 }
