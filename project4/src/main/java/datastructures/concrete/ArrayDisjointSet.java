@@ -17,17 +17,22 @@ public class ArrayDisjointSet<T> implements IDisjointSet<T> {
     private int[] pointers;
     
     
-    //TODO remove this varaible (for testing)
+    
+    
+    //TODO remove this variable (for testing)
     private ArrayDictionary<Integer, T> items;
     
-    //stores the current value of the integer representative,
+    
+    //stores the vertices traversed for findSet path compression
+    private int[] verticesTraversed;
+    
+    //stores the current value of an integer representative,
     //which increases by 1 each time an item is added
     private int currentVertex;
     
     //stores the generic items and their integer representatives
     private ChainedHashDictionary<T, Integer> ids;
 
-    
     // However, feel free to add more methods and private helper methods.
     // You will probably need to add one or two more fields in order to
     // successfully implement this class.
@@ -36,6 +41,7 @@ public class ArrayDisjointSet<T> implements IDisjointSet<T> {
         pointers = new int[50];
         currentVertex = 0;
         ids = new ChainedHashDictionary<T, Integer>();
+        verticesTraversed= new int[50];
         
         //TODO remove
         items = new ArrayDictionary<Integer, T>(50);
@@ -58,12 +64,9 @@ public class ArrayDisjointSet<T> implements IDisjointSet<T> {
             items.put(currentVertex, item);
 
             currentVertex++;
-        
     }
 
-    //returns the representative of the set / the index of the pointers
-    //array
-    //does not implement path compression yet
+    //returns the representative of the set / the index of the pointers array
     @Override
     public int findSet(T item) {
         if(!ids.containsKey(item)) {
@@ -71,6 +74,9 @@ public class ArrayDisjointSet<T> implements IDisjointSet<T> {
         }
         int vertex = ids.get(item);
         int parent = pointers[vertex];
+        
+        
+        int counter = 0;
         
         //TODO remove
         /*
@@ -101,9 +107,17 @@ public class ArrayDisjointSet<T> implements IDisjointSet<T> {
                 */
                 
                 hasFound = true;
+                
+                for(int i = 0; i < counter; i++) {
+                    pointers[verticesTraversed[i]] = vertex;
+                }
+                
                 return vertex;
                 
             } else {
+                verticesTraversed[counter] = vertex;
+                counter++;
+                
                 vertex = parent;
                 parent = pointers[parent];
                 
@@ -178,5 +192,6 @@ public class ArrayDisjointSet<T> implements IDisjointSet<T> {
             temp[i] = pointers[i];
         }
         pointers = temp;
+        verticesTraversed = new int[pointers.length * 2];
     }
 }
