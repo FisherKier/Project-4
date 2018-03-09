@@ -7,6 +7,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Random;
+
 public class TestArrayDisjointSet extends BaseTest {
     private <T> IDisjointSet<T> createForest(T[] items) {
         IDisjointSet<T> forest = new ArrayDisjointSet<>();
@@ -22,15 +24,68 @@ public class TestArrayDisjointSet extends BaseTest {
         }
     }
 
+    
+    
+    @Test
+    public void testPathCompressionSimple() {
+        String[] items = {"a", "b", "c", "d", "e"};
+        IDisjointSet<String> forest = createForest(items);
+        
+        for (int i = 0; i < 4; i++) {
+            check(forest, items, new int[] {0, 1, 2, 3, 4});
+        }
+            
+        forest.union(items[0], items[1]);
+        check(forest, items, new int[] {1, 1, 2, 3, 4});
+        
+        forest.union(items[2], items[1]);
+        check(forest, items, new int[] {1, 1, 1, 3, 4});
+        
+        forest.union(items[3], items[4]);
+        check(forest, items, new int[] {1, 1, 1, 4, 4});
+        
+        forest.union(items[0], items[3]);
+        check(forest, items, new int[] {4, 4, 4, 4, 4});
+    }
+    
+    @Test(timeout=8*SECOND)
+    public void testPathCompressionLarge() {
+        IDisjointSet<Integer> forest = new ArrayDisjointSet<>();
+        Random rand = new Random();
+        
+        int numItems = 5000;
+        for (int i = 0; i < numItems; i++) {
+            forest.makeSet(i);
+        }
+        
+        for (int i = 0; i < numItems; i++) {
+            int n  = rand.nextInt(numItems);
+            int m = rand.nextInt(numItems);
+            
+            if(forest.findSet(m) != forest.findSet(n)) {
+                forest.union(n,m);
+            }
+        }
+
+        int cap = 6000;
+        for (int i = 0; i < cap; i++) {
+            for (int j = 0; j < numItems; j++) {
+                forest.findSet(j);
+            }
+        }
+    }
+    
     @Test(timeout=SECOND)
     public void testMakeSetAndFindSetSimple() {
         String[] items = new String[] {"a", "b", "c", "d", "e"};
         IDisjointSet<String> forest = this.createForest(items);
-
+        
         for (int i = 0; i < 5; i++) {
             check(forest, items, new int[] {0, 1, 2, 3, 4});
         }
     }
+
+    
 
     @Test(timeout=SECOND)
     public void testUnionSimple() {
@@ -49,6 +104,8 @@ public class TestArrayDisjointSet extends BaseTest {
 
         assertEquals(4, forest.findSet("e"));
     }
+    
+    
 
     @Test(timeout=SECOND)
     public void testUnionUnequalTrees() {
@@ -119,4 +176,5 @@ public class TestArrayDisjointSet extends BaseTest {
             }
         }
     }
+    
 }
