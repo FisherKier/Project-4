@@ -1,5 +1,6 @@
 package datastructures;
 
+import datastructures.TestGraph.SimpleEdge;
 import datastructures.concrete.DoubleLinkedList;
 import datastructures.interfaces.IList;
 import datastructures.interfaces.ISet;
@@ -10,6 +11,7 @@ import misc.graphs.Graph;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 
 public class TestGraph extends BaseTest {
     public static class SimpleEdge<V> implements Edge<V>, Comparable<SimpleEdge<V>> {
@@ -80,6 +82,9 @@ public class TestGraph extends BaseTest {
         return new SimpleEdge<>(v1, v2, weight);
     }
 
+    
+    
+    
     public <V> void checkPathMatches(Graph<V, SimpleEdge<V>> graph, double expectedFinalCost, V[] expectedPath) {
         IList<SimpleEdge<V>> path = graph.findShortestPathBetween(
                 expectedPath[0],
@@ -101,7 +106,9 @@ public class TestGraph extends BaseTest {
 
         assertEquals(expectedFinalCost, cost, 0.0001);
     }
-
+    
+    
+    
     public Graph<String, SimpleEdge<String>> buildSimpleGraph() {
         IList<String> vertices = new DoubleLinkedList<>();
         vertices.add("a");
@@ -160,6 +167,55 @@ public class TestGraph extends BaseTest {
 
         return new Graph<>(vertices, edges);
     }
+    
+    public Graph<String, SimpleEdge<String>> buildMoreComplexGraph() {
+        IList<String> vertices = new DoubleLinkedList<>();
+        vertices.add("a");
+        vertices.add("b");
+        vertices.add("c");
+        vertices.add("d");
+        vertices.add("e");
+        vertices.add("f");
+        vertices.add("g");
+
+        vertices.add("h");
+        vertices.add("i");
+        vertices.add("j");
+        vertices.add("k");
+
+        IList<SimpleEdge<String>> edges = new DoubleLinkedList<>();
+        edges.add(edge("a", "b", 1));
+        edges.add(edge("a", "c", 4));
+        edges.add(edge("a", "d", 7));
+        edges.add(edge("a", "g", 9));
+
+        edges.add(edge("b", "c", 2));
+
+        edges.add(edge("c", "d", 3));
+        edges.add(edge("c", "f", 0));
+
+        edges.add(edge("d", "d", 3)); // self-loop
+        edges.add(edge("d", "g", 8));
+
+        edges.add(edge("e", "f", 1));
+        edges.add(edge("e", "g", 2)); // parallel edge
+        edges.add(edge("e", "g", 3)); // parallel edge
+        edges.add(edge("e", "g", 3)); // parallel edge
+
+        edges.add(edge("h", "i", 3));
+        edges.add(edge("h", "j", 1));
+        edges.add(edge("h", "k", 1));
+
+        edges.add(edge("i", "j", 4));
+        edges.add(edge("i", "k", 2)); // parallel edge
+        edges.add(edge("i", "k", 6)); // parallel edge
+
+        edges.add(edge("j", "k", 3));
+        
+        edges.add(edge("b", "j", 11));
+
+        return new Graph<>(vertices, edges);
+    }
 
     public Graph<String, SimpleEdge<String>> buildDisconnectedGraph() {
         IList<String> vertices = new DoubleLinkedList<>();
@@ -207,7 +263,30 @@ public class TestGraph extends BaseTest {
 
         return new Graph<>(vertices, edges);
     }
-
+    
+    public Graph<String, SimpleEdge<String>> buildLargeGraph() {
+        IList<String> vertices = new DoubleLinkedList<>();
+        IList<SimpleEdge<String>> edges = new DoubleLinkedList<>();
+        
+        int cap = 10000;
+        for(int i = 0; i < cap; i++) {
+            vertices.add("i");
+            edges.add(edge("i", "i", i));
+        }
+        
+        return new Graph<>(vertices, edges);
+    }
+    
+    
+    @Test(timeout=SECOND)
+    public void testBuildGraph() {
+        Graph<String, SimpleEdge<String>> graph1 = this.buildSimpleGraph();
+        
+        Graph<String, SimpleEdge<String>> graph2 = this.buildComplexGraph();
+        
+        Graph<String, SimpleEdge<String>> graph3 = this.buildDisconnectedGraph();
+    }
+    
     @Test(timeout=SECOND)
     public void testSizeMethods() {
         Graph<String, SimpleEdge<String>> graph1 = this.buildSimpleGraph();
@@ -263,6 +342,13 @@ public class TestGraph extends BaseTest {
         }
     }
 
+    @Test(timeout=10*SECOND)
+    public void testCreateLargeGraph() {
+        Graph<String, SimpleEdge<String>> graph = this.buildLargeGraph();
+        assertEquals(10000, graph.numVertices());
+    }
+    
+
     @Test(timeout=SECOND)
     public void testFindingMst() {
         Graph<String, SimpleEdge<String>> graph = this.buildSimpleGraph();
@@ -275,7 +361,43 @@ public class TestGraph extends BaseTest {
         assertTrue(mst.contains(edge("a", "c", 5)));
         assertTrue(mst.contains(edge("d", "f", 6)));
     }
+    
+    
+    
+    @Test(timeout=SECOND)
+    public void testFindMSTLarge() {
+        Graph<String, SimpleEdge<String>> graph1 = this.buildComplexGraph();
+        Graph<String, SimpleEdge<String>> graph2 = this.buildMoreComplexGraph();
+        
+        ISet<SimpleEdge<String>> mst1 = graph1.findMinimumSpanningTree();
+        
+        assertEquals(graph1.numVertices() - 1, mst1.size());
+        assertTrue(mst1.contains(edge("c", "f", 0)));
+        assertTrue(mst1.contains(edge("e", "f", 1)));
+        assertTrue(mst1.contains(edge("a", "b", 1)));
+        assertTrue(mst1.contains(edge("b", "c", 2)));
+        assertTrue(mst1.contains(edge("c", "d", 3)));
+        assertTrue(mst1.contains(edge("e", "g", 2)));
+        
+        
+        ISet<SimpleEdge<String>> mst2 = graph2.findMinimumSpanningTree();
+        
+        assertEquals(graph2.numVertices() - 1, mst2.size());
+        assertTrue(mst2.contains(edge("e", "f", 1)));
+        assertTrue(mst2.contains(edge("c", "f", 0)));
+        assertTrue(mst2.contains(edge("h", "j", 1)));
+        assertTrue(mst2.contains(edge("h", "k", 1)));
+        assertTrue(mst2.contains(edge("a", "b", 1)));
+        assertTrue(mst2.contains(edge("b", "c", 2)));
+        assertTrue(mst2.contains(edge("e", "g", 2)));
+        assertTrue(mst2.contains(edge("i", "k", 2)));
+        assertTrue(mst2.contains(edge("c", "d", 3)));
+        assertTrue(mst2.contains(edge("b", "j", 11)));
+        
+    }
 
+    
+    
     @Test(timeout=SECOND)
     public void testFindingShortestPathSimple() {
         Graph<String, SimpleEdge<String>> graph = this.buildSimpleGraph();
@@ -326,4 +448,7 @@ public class TestGraph extends BaseTest {
             // All ok -- expected result
         }
     }
+    
+    
+    
 }

@@ -1,8 +1,13 @@
 package misc.graphs;
 
+import datastructures.concrete.ArrayDisjointSet;
+import datastructures.concrete.ChainedHashSet;
 import datastructures.concrete.DoubleLinkedList;
+import datastructures.concrete.dictionaries.ArrayDictionary;
+import datastructures.concrete.dictionaries.ChainedHashDictionary;
 import datastructures.interfaces.IList;
 import datastructures.interfaces.ISet;
+import misc.Searcher;
 import misc.exceptions.NoPathExistsException;
 import misc.exceptions.NotYetImplementedException;
 
@@ -52,6 +57,12 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
     // Working with generics is really not the focus of this class, so if you
     // get stuck, let us know we'll try and help you get unstuck as best as we can.
 
+    private int currentVertex;
+    private ArrayDictionary<V, Double>[] VAndE;
+    private IList<V> vertices;
+    private IList<E> edges;
+
+    
     /**
      * Constructs a new graph based on the given vertices and edges.
      *
@@ -60,7 +71,32 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      *                                   present in the 'vertices' list
      */
     public Graph(IList<V> vertices, IList<E> edges) {
-        // TODO: Your code here
+        this.vertices = vertices;
+        this.edges =  edges;
+        this.VAndE = new ArrayDictionary[vertices.size()];
+        
+        int counter = 0;
+        for (V vertex : this.vertices) {
+            ArrayDictionary<V, Double> adjacentVertices = new ArrayDictionary<>();
+            
+            for (E edge : this.edges) {
+                if (edge.getWeight() < 0) {
+                    throw new IllegalArgumentException();
+                }
+                
+                if (!this.vertices.contains(edge.getVertex1()) || !this.vertices.contains(edge.getVertex2())) {
+                    throw new IllegalArgumentException();
+                }
+
+                if (edge.getVertex1() == vertex) {
+                    adjacentVertices.put(edge.getVertex1(), edge.getWeight());
+                } else if (edge.getVertex2() == vertex) {
+                    adjacentVertices.put(edge.getVertex2(), edge.getWeight());
+                }
+            }
+            VAndE[counter] = adjacentVertices;
+            counter++;
+        }
     }
 
     /**
@@ -87,14 +123,14 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      * Returns the number of vertices contained within this graph.
      */
     public int numVertices() {
-        throw new NotYetImplementedException();
+        return vertices.size();
     }
 
     /**
      * Returns the number of edges contained within this graph.
      */
     public int numEdges() {
-        throw new NotYetImplementedException();
+        return edges.size();
     }
 
     /**
@@ -106,7 +142,46 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      * Precondition: the graph does not contain any unconnected components.
      */
     public ISet<E> findMinimumSpanningTree() {
-        throw new NotYetImplementedException();
+        int counter = 0;
+        ISet<E> minEdges = new ChainedHashSet<>();
+        ArrayDisjointSet<V> forest = new ArrayDisjointSet<>();
+        IList<E> sortedEdges = Searcher.topKSort(edges.size(), edges);
+        
+        //TODO maybe delete sortedVertices
+        IList<V> sortedVertices = new  DoubleLinkedList<>();
+        
+        if(edges.size() == 1) {
+            minEdges.add(sortedEdges.get(0));
+            return minEdges;
+        }
+        
+        for (int i = 0; i < vertices.size(); i++) {
+            forest.makeSet(vertices.get(i));
+        }
+        
+        while (minEdges.size() < vertices.size() - 1) {
+            E edge = sortedEdges.get(counter);
+            counter++;
+            V v1 = edge.getVertex1();
+            V v2 = edge.getVertex2();
+            
+            //TODO delete test code
+            System.out.println("SortedEdges size: " + sortedEdges.size());
+            System.out.println("minEdges size: " + minEdges.size());
+            System.out.println("Num Vertices: " + vertices.size());
+            System.out.println("Counter: " + counter);
+            System.out.println("Checking vertices: v1 = " + v1 + " and v2 = " + v2 );
+            System.out.println();
+            
+            
+            
+            if (forest.findSet(v1) != forest.findSet(v2)) {
+                forest.union(v1, v2);
+                minEdges.add(edge);
+            }
+        }
+        
+        return minEdges;
     }
 
     /**
@@ -122,6 +197,32 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      * @throws NoPathExistsException  if there does not exist a path from the start to the end
      */
     public IList<E> findShortestPathBetween(V start, V end) {
-        throw new NotYetImplementedException();
+        ISet<E> MST = findMinimumSpanningTree();
+        V vertex = null;
+        
+        for (E edge : MST) {
+            if (edge.getVertex1() == start) {
+                vertex = edge.getVertex1();
+                break;
+            } else if (edge.getVertex2() == start) {
+                vertex = edge.getVertex2();
+                break;
+            }
+        }
+        
+        IList<E> path = new DoubleLinkedList<>();
+        path = findPathHelper(vertex, end, MST, path);
+        if (path.isEmpty()) {
+            throw new NoPathExistsException();
+        }
+        return path;
+    }
+    
+    private IList<E> findPathHelper(V current, V end, ISet<E> mst, IList<E> path) {
+        if (current == end) {
+            return path;
+        } else {
+            
+        }
     }
 }
