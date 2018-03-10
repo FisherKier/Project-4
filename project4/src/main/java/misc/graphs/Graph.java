@@ -59,8 +59,6 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
     // Working with generics is really not the focus of this class, so if you
     // get stuck, let us know we'll try and help you get unstuck as best as we can.
 
-    private int currentVertex;
-    private ArrayDictionary<V, Double>[] VAndE;
     private IList<V> vertices;
     private IList<E> edges;
 
@@ -75,29 +73,15 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
     public Graph(IList<V> vertices, IList<E> edges) {
         this.vertices = vertices;
         this.edges =  edges;
-        this.VAndE = new ArrayDictionary[vertices.size()];
-        
-        int counter = 0;
-        for (V vertex : this.vertices) {
-            ArrayDictionary<V, Double> adjacentVertices = new ArrayDictionary<>();
-            
-            for (E edge : this.edges) {
-                if (edge.getWeight() < 0) {
-                    throw new IllegalArgumentException();
-                }
-                
-                if (!this.vertices.contains(edge.getVertex1()) || !this.vertices.contains(edge.getVertex2())) {
-                    throw new IllegalArgumentException();
-                }
 
-                if (edge.getVertex1() == vertex) {
-                    adjacentVertices.put(edge.getVertex1(), edge.getWeight());
-                } else if (edge.getVertex2() == vertex) {
-                    adjacentVertices.put(edge.getVertex2(), edge.getWeight());
-                }
+        for (E edge : this.edges) {
+            if (edge.getWeight() < 0) {
+                throw new IllegalArgumentException();
             }
-            VAndE[counter] = adjacentVertices;
-            counter++;
+            
+            if (!vertices.contains(edge.getVertex1()) || !vertices.contains(edge.getVertex2())) {
+                throw new IllegalArgumentException();
+            }
         }
     }
 
@@ -149,9 +133,6 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
         ArrayDisjointSet<V> forest = new ArrayDisjointSet<>();
         IList<E> sortedEdges = Searcher.topKSort(edges.size(), edges);
         
-        //TODO maybe delete sortedVertices
-        IList<V> sortedVertices = new  DoubleLinkedList<>();
-        
         if(edges.size() == 1) {
             minEdges.add(sortedEdges.get(0));
             return minEdges;
@@ -166,17 +147,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
             counter++;
             V v1 = edge.getVertex1();
             V v2 = edge.getVertex2();
-            
-            //TODO delete test code
-            System.out.println("SortedEdges size: " + sortedEdges.size());
-            System.out.println("minEdges size: " + minEdges.size());
-            System.out.println("Num Vertices: " + vertices.size());
-            System.out.println("Counter: " + counter);
-            System.out.println("Checking vertices: v1 = " + v1 + " and v2 = " + v2 );
-            System.out.println();
-            
-            
-            
+
             if (forest.findSet(v1) != forest.findSet(v2)) {
                 forest.union(v1, v2);
                 minEdges.add(edge);
@@ -238,7 +209,12 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
                    }
         }
         
+        
         while(current != null) {
+            if (current.equals(end)) {
+                return vertexPath.get(current);
+            }
+            
             explored.add(current);
             //explore currents edges
             for (E edge : vertexEdges.get(current)) {
@@ -264,9 +240,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
             //find next vertex, one with shortest distance and update current
             current = findNextCurrent(available, vertexDistance);
             //check if current is the end vertex, if so return
-            if (current.equals(end)) {
-                return vertexPath.get(current);
-            }
+            
         }
         //could not find end return null or throw exception
         throw new NoPathExistsException();

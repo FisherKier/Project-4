@@ -269,7 +269,8 @@ public class TestGraph extends BaseTest {
         IList<SimpleEdge<String>> edges = new DoubleLinkedList<>();
         
         int cap = 10000;
-        for(int i = 0; i < cap; i++) {
+        vertices.add("0");
+        for(int i = 1; i < cap; i++) {
             vertices.add("i");
             edges.add(edge("i", "i", i));
         }
@@ -347,7 +348,7 @@ public class TestGraph extends BaseTest {
         Graph<String, SimpleEdge<String>> graph = this.buildLargeGraph();
         assertEquals(10000, graph.numVertices());
     }
-    
+
 
     @Test(timeout=SECOND)
     public void testFindingMst() {
@@ -448,7 +449,4 @@ public class TestGraph extends BaseTest {
             // All ok -- expected result
         }
     }
-    
-    
-    
 }
