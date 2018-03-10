@@ -177,4 +177,22 @@ public class TestArrayDisjointSet extends BaseTest {
         }
     }
     
+    @Test(timeout=8 * SECOND)
+    public void testReallyLargeForest() {
+        IDisjointSet<Integer> forest = new ArrayDisjointSet<>();
+        forest.makeSet(0);
+
+        int numItems = 10000;
+        for (int i = 1; i < numItems; i++) {
+            forest.makeSet(i);
+        }
+
+        int cap = 6000;
+        for (int i = 0; i < cap; i++) {
+            for (int j = 0; j < numItems; j++) {
+                assertEquals(forest.findSet(j), forest.findSet(j));
+            }
+        }
+    }
+    
 }
