@@ -33,24 +33,9 @@ public class KruskalMazeCarver implements MazeCarver {
             wall.setDistance(rand.nextDouble());
         }
         
-        //TODO remove following lines
-        System.out.println("Starting graph creation");
-        long startTime = System.currentTimeMillis();
-        
         Graph<Room, Wall> carvingTool = new Graph<Room, Wall>(rooms, walls);
         
-        long endTime = System.currentTimeMillis();
-        long duration = (endTime - startTime);
-        System.out.println("Time to make graph: " + duration);
-        
-        System.out.println("Starting MST creation");
-        startTime = System.currentTimeMillis();
-        
         toRemove = carvingTool.findMinimumSpanningTree();
-        endTime = System.currentTimeMillis();
-
-        duration = (endTime - startTime);
-        System.out.println("Time to find MST: " + duration);
         
         //Set walls to Original
         for (Wall wall : walls) {

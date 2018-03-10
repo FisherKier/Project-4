@@ -96,7 +96,7 @@ public class TestGraph extends BaseTest {
         V curr = expectedPath[0];
         for (int i = 0; i < path.size(); i++) {
             Edge<V> edge = path.get(i);
-
+            
             V next = edge.getOtherVertex(curr);
             cost += edge.getWeight();
             assertEquals(expectedPath[i + 1], next);
@@ -270,7 +270,7 @@ public class TestGraph extends BaseTest {
         
         int cap = 10000;
         vertices.add("0");
-        for(int i = 1; i < cap; i++) {
+        for (int i = 1; i < cap; i++) {
             vertices.add("i");
             edges.add(edge("i", "i", i));
         }
