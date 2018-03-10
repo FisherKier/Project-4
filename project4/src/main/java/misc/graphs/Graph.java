@@ -5,8 +5,10 @@ import datastructures.concrete.ChainedHashSet;
 import datastructures.concrete.DoubleLinkedList;
 import datastructures.concrete.dictionaries.ArrayDictionary;
 import datastructures.concrete.dictionaries.ChainedHashDictionary;
+import datastructures.interfaces.IDictionary;
 import datastructures.interfaces.IList;
 import datastructures.interfaces.ISet;
+import mazes.entities.Room;
 import misc.Searcher;
 import misc.exceptions.NoPathExistsException;
 import misc.exceptions.NotYetImplementedException;
@@ -197,32 +199,89 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      * @throws NoPathExistsException  if there does not exist a path from the start to the end
      */
     public IList<E> findShortestPathBetween(V start, V end) {
-        ISet<E> MST = findMinimumSpanningTree();
-        V vertex = null;
         
-        for (E edge : MST) {
-            if (edge.getVertex1() == start) {
-                vertex = edge.getVertex1();
-                break;
-            } else if (edge.getVertex2() == start) {
-                vertex = edge.getVertex2();
-                break;
+        //Initialize vertex distance values
+        IDictionary<V, Double> vertexDistance = new ChainedHashDictionary<V, Double>();
+        for (V vertex : vertices) {
+            vertexDistance.put(vertex, Double.POSITIVE_INFINITY);
+        }
+        vertexDistance.put(start, 0.0);
+        //store the path from the start to every vertex, to be returned one the ending vertex is found
+        IDictionary<V, IList<E>> vertexPath = new ChainedHashDictionary<V, IList<E>>();
+        vertexPath.put(start, new DoubleLinkedList<E>());
+        //keep track of which nodes have been visited and which can be explored
+        ISet<V> explored = new ChainedHashSet<V>();
+        ISet<V> available = new ChainedHashSet<V>();
+        V current = start;
+        //create a dictionary to find the edges of any vertex
+        IDictionary<V, ISet<E>> vertexEdges = new ChainedHashDictionary<V, ISet<E>>();
+        for (E edge : edges) {
+           V tempVertex = edge.getVertex1();
+                   if (vertexEdges.containsKey(tempVertex)) {
+                       ISet<E> tempSet = vertexEdges.get(tempVertex);
+                       tempSet.add(edge);
+                       vertexEdges.put(tempVertex, tempSet);
+                   }else {
+                       ISet<E> tempSet = new ChainedHashSet<E>();
+                       tempSet.add(edge);
+                       vertexEdges.put(tempVertex, tempSet); 
+                   }
+          tempVertex = edge.getVertex2();
+                   if (vertexEdges.containsKey(tempVertex)) {
+                       ISet<E> tempSet = vertexEdges.get(tempVertex);
+                       tempSet.add(edge);
+                       vertexEdges.put(tempVertex, tempSet);
+                   }else {
+                       ISet<E> tempSet = new ChainedHashSet<E>();
+                       tempSet.add(edge);
+                       vertexEdges.put(tempVertex, tempSet); 
+                   }
+        }
+        
+        while(current != null) {
+            explored.add(current);
+            //explore currents edges
+            for (E edge : vertexEdges.get(current)) {
+                V otherEdge = edge.getOtherVertex(current);
+                //check if values are locked
+                if (!explored.contains(otherEdge)) {
+                //update available vertices for next run
+                available.add(otherEdge);
+                //update distance
+                Double tempDistance = vertexDistance.get(current) + edge.getWeight();
+                if (vertexDistance.get(otherEdge) > tempDistance) {
+                vertexDistance.put(otherEdge, tempDistance);
+                //update the new explored paths
+                IList<E> newPath = new DoubleLinkedList<E>();
+                for (E pathEdge : vertexPath.get(current)) {
+                    newPath.add(pathEdge);
+                }
+                newPath.add(edge);
+                vertexPath.put(otherEdge, newPath);
+                }
+                }
+            }
+            //find next vertex, one with shortest distance and update current
+            current = findNextCurrent(available, vertexDistance);
+            //check if current is the end vertex, if so return
+            if (current.equals(end)) {
+                return vertexPath.get(current);
             }
         }
-        
-        IList<E> path = new DoubleLinkedList<>();
-        path = findPathHelper(vertex, end, MST, path);
-        if (path.isEmpty()) {
-            throw new NoPathExistsException();
-        }
-        return path;
+        //could not find end return null or throw exception
+        throw new NoPathExistsException();
     }
     
-    private IList<E> findPathHelper(V current, V end, ISet<E> mst, IList<E> path) {
-        if (current == end) {
-            return path;
-        } else {
-            
+    private V findNextCurrent(ISet<V> available, IDictionary<V, Double> vertexDistance) {
+        V newCurrent = null;
+        for (V next : available) {
+            if (newCurrent == null || vertexDistance.get(next) < vertexDistance.get(newCurrent)) {
+                newCurrent = next;
+            }
         }
+        if (newCurrent != null) {
+            available.remove(newCurrent);
+        }
+        return newCurrent;
     }
 }
