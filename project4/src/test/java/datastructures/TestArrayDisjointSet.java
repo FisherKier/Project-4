@@ -62,8 +62,8 @@ public class TestArrayDisjointSet extends BaseTest {
             int n  = rand.nextInt(numItems);
             int m = rand.nextInt(numItems);
             
-            if(forest.findSet(m) != forest.findSet(n)) {
-                forest.union(n,m);
+            if (forest.findSet(m) != forest.findSet(n)) {
+                forest.union(n, m);
             }
         }
 

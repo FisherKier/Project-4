@@ -3,7 +3,6 @@ package misc.graphs;
 import datastructures.concrete.ArrayDisjointSet;
 import datastructures.concrete.ChainedHashSet;
 import datastructures.concrete.DoubleLinkedList;
-import datastructures.concrete.dictionaries.ArrayDictionary;
 import datastructures.concrete.dictionaries.ChainedHashDictionary;
 import datastructures.interfaces.IDictionary;
 import datastructures.interfaces.IList;
@@ -11,7 +10,6 @@ import datastructures.interfaces.ISet;
 import mazes.entities.Room;
 import misc.Searcher;
 import misc.exceptions.NoPathExistsException;
-import misc.exceptions.NotYetImplementedException;
 
 /**
  * Represents an undirected, weighted graph, possibly containing self-loops, parallel edges,
@@ -133,7 +131,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
         ArrayDisjointSet<V> forest = new ArrayDisjointSet<>();
         IList<E> sortedEdges = Searcher.topKSort(edges.size(), edges);
         
-        if(edges.size() == 1) {
+        if (edges.size() == 1) {
             minEdges.add(sortedEdges.get(0));
             return minEdges;
         }
@@ -210,7 +208,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
         }
         
         
-        while(current != null) {
+        while (current != null) {
             if (current.equals(end)) {
                 return vertexPath.get(current);
             }
